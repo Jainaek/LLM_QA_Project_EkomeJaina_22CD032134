@@ -4,7 +4,7 @@ import string
 from dotenv import load_dotenv
 
 from flask import Flask, render_template, request
-from google import genai
+import google.generativeai as genai
 from google.genai.errors import APIError
 
 # --- Initialization ---
