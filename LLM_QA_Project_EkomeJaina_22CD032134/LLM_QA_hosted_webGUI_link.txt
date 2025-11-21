@@ -1,2 +1,7 @@
 Name: Ekome Jaina
+
 Matric number: 22CD032134
+
+https://github.com/Jainaek/LLM_QA_Project_EkomeJaina_22CD032134
+
+https://jainaek.pythonanywhere.com/
