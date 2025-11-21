@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NLP Q&A System - Web GUI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>NLP Question-Answering System</h1>
+            <p>Powered by Large Language Models</p>
+        </header>
+
+        <main>
+            <div class="chat-container">
+                <div class="input-section">
+                    <textarea
+                        id="questionInput"
+                        placeholder="Enter your question here..."
+                        rows="4"
+                    ></textarea>
+                    <div class="button-group">
+                        <button id="askButton" onclick="askQuestion()">Ask Question</button>
+                        <button id="clearButton" onclick="clearChat()">Clear</button>
+                    </div>
+                </div>
+
+                <div class="response-section">
+                    <div id="loading" class="loading hidden">
+                        <p>Processing your question...</p>
+                    </div>
+
+                    <div id="response" class="response hidden">
+                        <div class="response-item">
+                            <strong>Original Question:</strong>
+                            <p id="originalQuestion"></p>
+                        </div>
+                        <div class="response-item">
+                            <strong>Processed Question:</strong>
+                            <p id="processedQuestion"></p>
+                        </div>
+                        <div class="response-item">
+                            <strong>Tokens:</strong>
+                            <p id="tokens"></p>
+                        </div>
+                        <div class="response-item">
+                            <strong>Answer:</strong>
+                            <p id="answer"></p>
+                        </div>
+                    </div>
+
+                    <div id="error" class="error hidden">
+                        <p id="errorMessage"></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>CSC415 / CSC331 - Artificial Intelligence Project</p>
+        </footer>
+    </div>
+
+    <script>
+        function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            const askButton = document.getElementById('askButton');
+            const loading = document.getElementById('loading');
+            const response = document.getElementById('response');
+            const error = document.getElementById('error');
+
+            response.classList.add('hidden');
+            error.classList.add('hidden');
+
+            if (!question) {
+                showError('Please enter a question');
+                return;
+            }
+
+            loading.classList.remove('hidden');
+            askButton.disabled = true;
+            askButton.textContent = 'Processing...';
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ question: question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showError(data.error);
+                } else {
+                    displayResponse(data);
+                }
+            })
+            .catch(error => {
+                showError('An error occurred while processing your question');
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                loading.classList.add('hidden');
+                askButton.disabled = false;
+                askButton.textContent = 'Ask Question';
+            });
+        }
+
+        function displayResponse(data) {
+            document.getElementById('originalQuestion').textContent = data.original_question;
+            document.getElementById('processedQuestion').textContent = data.processed_question;
+            document.getElementById('tokens').textContent = data.tokens.join(', ');
+            document.getElementById('answer').textContent = data.answer;
+            document.getElementById('response').classList.remove('hidden');
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('error').classList.remove('hidden');
+        }
+
+        function clearChat() {
+            document.getElementById('questionInput').value = '';
+            document.getElementById('response').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+        }
+
+        document.getElementById('questionInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+    </script>
+</body>
+</html>
